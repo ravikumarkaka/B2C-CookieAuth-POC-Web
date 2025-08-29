@@ -1,80 +1,56 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
 
+var builder = WebApplication.CreateBuilder(args);
 
-// Authentication: Cookie + OIDC (Azure AD B2C)
+// 🔹 Add Authentication with Azure AD B2C
 builder.Services.AddAuthentication(options =>
 {
-options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 })
-.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+.AddCookie()
+.AddMicrosoftIdentityWebApp(options =>
 {
-// Adjust cookie settings for POC / App Service (secure by default)
-options.Cookie.HttpOnly = true;
-options.Cookie.SameSite = SameSiteMode.None; // if cross-site scenarios (adjust for your scenario)
-options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-})
-.AddMicrosoftIdentityWebApp(azureAdB2CSection);
-
+    builder.Configuration.Bind("AzureAdB2C", options);
+});
 
 builder.Services.AddAuthorization();
 
-
-// Minimal API endpoints
 var app = builder.Build();
 
+// 🔹 Middleware
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-
-// Health / public
-app.MapGet("/", () => Results.Content("<h2>Global Nav POC (Cookie Auth) — Public</h2>", "text/html"));
-
-
-// Login end-point: triggers B2C OIDC flow
-app.MapGet("/login", async (HttpContext http) =>
+// 🔹 Routes
+app.MapGet("/", async context =>
 {
-await http.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new Microsoft.AspNetCore.Authentication.AuthenticationProperties
-{
-RedirectUri = "/"
-});
+    await context.Response.WriteAsync("✅ Azure B2C Cookie Auth POC is running!");
 });
 
-
-// Logout: sign out from cookie and B2C
-app.MapGet("/logout", async (HttpContext http) =>
+app.MapGet("/login", async context =>
 {
-// Sign out from local cookie
-await http.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-
-// Then sign out from the OpenIdConnect (B2C) to clear the session at provider (redirect back to home)
-await http.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new Microsoft.AspNetCore.Authentication.AuthenticationProperties
-{
-RedirectUri = "/"
-});
+    await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme,
+        new AuthenticationProperties { RedirectUri = "/" });
 });
 
-
-// Protected endpoint
-app.MapGet("/secure", (ClaimsPrincipal user) =>
+app.MapGet("/logout", async context =>
 {
-var name = user.Identity?.Name ?? user.FindFirst("name")?.Value ?? "(unknown)";
-return Results.Json(new { message = $"Welcome {name} — authenticated via Azure AD B2C cookie." });
-}).RequireAuthorization();
-
-
-// Return user claims for debugging (only for POC)
-app.MapGet("/claims", (ClaimsPrincipal user) =>
-{
-var claims = user.Claims.Select(c => new { c.Type, c.Value });
-return Results.Json(claims);
-}).RequireAuthorization();
-
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme,
+        new AuthenticationProperties { RedirectUri = "/" });
+});
 
 app.Run();
