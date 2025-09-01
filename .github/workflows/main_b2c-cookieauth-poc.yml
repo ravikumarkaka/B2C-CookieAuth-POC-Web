@@ -53,17 +53,12 @@ jobs:
       - name: 'Login to Azure'
         uses: azure/login@v1
         with:
-          # Option 1: Use JSON credentials (recommended)
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
-          # OR Option 2: Use individual parameters (choose one method only)
-          # client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          # client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}  # ← MUST ADD THIS
-          # tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          # subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
-          auth-type: service_principal  # ← CORRECTED: lowercase
+          auth-type: serviceprincipal  # ← CORRECTED: "serviceprincipal"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -71,5 +66,4 @@ jobs:
           app-name: b2c-cookieauth-poc
           slot-name: Production
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: ./publish  # ← CORRECTED: path to downloaded artifact
-
+          package: ./publish
