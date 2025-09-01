@@ -63,7 +63,7 @@ jobs:
           # subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           
           enable-AzPSSession: true
-          auth-type: serviceprincipal  # ← CORRECTED: lowercase
+          auth-type: service_principal  # ← CORRECTED: lowercase
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -72,3 +72,4 @@ jobs:
           slot-name: Production
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           package: ./publish  # ← CORRECTED: path to downloaded artifact
+
