@@ -58,7 +58,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
-          auth-type: serviceprincipal  # ← CORRECTED: "serviceprincipal"
+          auth-type: service_principal  # ← CORRECTED: "serviceprincipal"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -67,3 +67,4 @@ jobs:
           slot-name: Production
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           package: ./publish
+
