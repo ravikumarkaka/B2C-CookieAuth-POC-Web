@@ -4,8 +4,9 @@
 <Nullable>enable</Nullable>
 <ImplicitUsings>enable</ImplicitUsings>
 <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+<PublishReadyToRun>true</PublishReadyToRun>
 </PropertyGroup>
-
 
 <ItemGroup>
 <PackageReference Include="Microsoft.Identity.Web" Version="2.29.0" />
