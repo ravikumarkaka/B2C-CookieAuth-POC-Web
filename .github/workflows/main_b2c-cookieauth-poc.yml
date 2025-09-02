@@ -29,7 +29,7 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
+          name: myapp
           path: ./publish
 
   deploy:
@@ -40,13 +40,14 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
+          name: myapp
           path: ./publish
 
       - name: Deploy to Azure Web App
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'b2c-cookieauth-poc'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_97382512A8944968B980A460F014B0B5 }}
-          package: ./publish
+          package: ${{env.DOTNET_ROOT}}/myapp
