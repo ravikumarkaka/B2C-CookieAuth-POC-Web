@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
 
@@ -23,32 +20,30 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ./publish
+      - name: dotnet publish (with runtime)
+        run: dotnet publish -c Release -r win-x86 --self-contained false -o ${{env.DOTNET_ROOT}}/myapp
+        # 👆 Change win-x86 → win-x64 if your App Service is 64-bit
+        # use --self-contained true if you want to package the runtime
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ./publish
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
     runs-on: windows-latest
     needs: build
-
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ./publish
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'b2c-cookieauth-poc'
           slot-name: 'Production'
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_97382512A8944968B980A460F014B0B5 }}
-
-
