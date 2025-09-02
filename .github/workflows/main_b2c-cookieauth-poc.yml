@@ -50,5 +50,5 @@ jobs:
           app-name: 'b2c-cookieauth-poc'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_97382512A8944968B980A460F014B0B5 }}
-          package: ${{env.DOTNET_ROOT}}/.net-app
+
 
