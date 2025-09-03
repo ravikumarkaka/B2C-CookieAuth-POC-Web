@@ -24,7 +24,8 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish (with IIS web.config)
-        run: dotnet publish -c Release -o ./publish /p:UseAppHost=false
+        run: dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
+
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -50,5 +51,6 @@ jobs:
           app-name: 'b2c-cookieauth-poc'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_97382512A8944968B980A460F014B0B5 }}
+
 
 
